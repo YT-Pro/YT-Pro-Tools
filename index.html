@@ -1220,15 +1220,22 @@ Last Updated: February 22, 2025`
         function toggleMode() {
     document.body.classList.toggle('night-mode');
     const isNight = document.body.classList.contains('night-mode');
+
+    // ব্রাউজারে সেটিংস সংরক্ষণ
     localStorage.setItem('mode', isNight ? 'night' : 'day');
+
+    // আইকন পরিবর্তন
     document.querySelector('.mode-toggle i').className = isNight ? 'fas fa-moon' : 'fas fa-sun';
 }
 
-// আগের মোড ফিরিয়ে আনবে
-if (localStorage.getItem('mode') === 'night') {
-    document.body.classList.add('night-mode');
-    document.querySelector('.mode-toggle i').className = 'fas fa-moon';
-}
+// পেজ লোড হলে আগের মোড ফিরিয়ে আনবে
+window.onload = function () {
+    const savedMode = localStorage.getItem('mode');
+    if (savedMode === 'night') {
+        document.body.classList.add('night-mode');
+        document.querySelector('.mode-toggle i').className = 'fas fa-moon';
+    }
+};
 
         function showArticle(content) {
             const modal = document.getElementById('article-modal');
