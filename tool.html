@@ -102,9 +102,7 @@
 
     <main class="main-content">
         <div id="thumbnail-grid" class="thumbnail-grid"></div>
-        <button id="back-btn" class="back-btn" style="display: none;" onclick="goBack()">Back</button>
-    </main>
-<style>
+        <style>
     .info-section { max-width: 800px; margin: 40px auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); text-align: center; }
     .info-section h2 { color: #d00; margin-bottom: 10px; }
     .info-section p, .info-section li { color: #333; font-size: 16px; line-height: 1.6; }
@@ -138,6 +136,8 @@
 <script>
     function toggleFAQ(index) { let ans = document.querySelectorAll(".faq div"); ans[index].style.display = ans[index].style.display === "block" ? "none" : "block"; }
 </script>
+        <button id="back-btn" class="back-btn" style="display: none;" onclick="goBack()">Back</button>
+    </main>
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-links">
