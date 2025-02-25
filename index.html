@@ -502,41 +502,24 @@
             <h2 class="box-title">Coming Soon Features</h2>
         </div>
         <style>
-    .info-box { background: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-bottom: 15px; text-align: center; }
-    .info-box h2 { color: #d90000; margin-bottom: 10px; }
-    .accordion { background: #fff; border: 1px solid #ddd; border-radius: 5px; margin: 5px 0; cursor: pointer; padding: 10px; text-align: left; font-weight: bold; }
-    .accordion-content { display: none; padding: 10px; background: #f9f9f9; border-radius: 0 0 5px 5px; }
-    .contact { font-weight: bold; color: #d90000; text-align: center; margin-top: 15px; }
+    .info-box, .accordion {background: #fff; padding: 10px; border-radius: 8px; box-shadow: 0 0 8px rgba(0,0,0,0.1); margin: 8px auto; max-width: 800px; text-align: center;}
+    .info-box h2, .accordion {color: #d90000; cursor: pointer; font-weight: bold;}
+    .accordion-content {display: none; padding: 8px; background: #f9f9f9;}
+    .contact {color: #d90000; text-align: center; font-weight: bold; margin-top: 10px;}
+    @media (max-width: 768px) {.info-box, .accordion {max-width: 90%;} .info-box p, .accordion-content {font-size: 14px;}}
 </style>
 
-<div class="info-box">
-    <h2>About YT Master</h2>
-    <p>YT Master helps YouTube creators generate SEO-friendly titles and high-quality thumbnails.</p>
-</div>
+<div class="info-box"><h2>About YT Master</h2><p>YT Master helps YouTube creators generate SEO-friendly titles & high-quality thumbnails.</p></div>
+<div class="info-box"><h2>How It Works</h2><p>1. Enter a title<br>2. Get 20+ thumbnails<br>3. Pick & download</p></div>
 
-<div class="info-box">
-    <h2>How It Works</h2>
-    <p>1. Enter a video title<br>2. Get 20+ suggested thumbnails<br>3. Pick & download your favorite</p>
-</div>
+<h2 class="info-box">FAQs</h2>
+<div class="accordion">What is YT Master?</div><div class="accordion-content">A free tool to enhance YouTube content.</div>
+<div class="accordion">Is it free?</div><div class="accordion-content">Yes, 100% free.</div>
+<div class="accordion">Do I need to sign up?</div><div class="accordion-content">No registration needed.</div>
+<div class="accordion">Can I use these thumbnails?</div><div class="accordion-content">Yes, fully YouTube-optimized.</div>
+<div class="accordion">Does it work on mobile?</div><div class="accordion-content">Yes, mobile-friendly.</div>
 
-<h2 style="text-align:center; color:#d90000;">FAQs</h2>
-
-<div class="accordion">What is YT Master?</div>
-<div class="accordion-content">A free tool to improve your YouTube content.</div>
-
-<div class="accordion">Is it free?</div>
-<div class="accordion-content">Yes, it's 100% free to use.</div>
-
-<div class="accordion">Do I need to sign up?</div>
-<div class="accordion-content">No registration required.</div>
-
-<div class="accordion">Can I use these thumbnails?</div>
-<div class="accordion-content">Yes, all thumbnails are YouTube-optimized.</div>
-
-<div class="accordion">Does it work on mobile?</div>
-<div class="accordion-content">Yes, it’s fully mobile-friendly.</div>
-
-<p class="contact">For support, email us: <a href="mailto:lankyposture97@gmail.com">lankyposture97@gmail.com</a></p>
+<p class="contact">For support, email: <a href="mailto:lankyposture97@gmail.com">lankyposture97@gmail.com</a></p>
 
 <script>
     document.querySelectorAll(".accordion").forEach(acc => {
