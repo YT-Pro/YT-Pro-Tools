@@ -1193,6 +1193,45 @@ Last Updated: February 22, 2025`,
 
 Last Updated: February 22, 2025`
         };
+        // ✅ ফুটারের লিংকগুলোর জন্য ইভেন্ট যুক্ত করবো
+document.querySelectorAll('.footer-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const page = link.getAttribute('data-page');
+        
+        if (articles[page]) {
+            showArticle(articles[page]);
+        } else {
+            alert("⚠️ Content not found!");
+        }
+    });
+});
+
+// ✅ আর্টিকেল শো করার ফাংশন
+function showArticle(content) {
+    const modal = document.getElementById('article-modal');
+    const articleText = document.getElementById('article-text');
+
+    if (!modal) {
+        console.error("⚠️ Modal not found!");
+        return;
+    }
+
+    articleText.innerHTML = content;
+    modal.style.display = 'flex';
+}
+
+// ✅ আর্টিকেল বন্ধ করার ইভেন্ট
+document.querySelector('.close-article').addEventListener('click', () => {
+    document.getElementById('article-modal').style.display = 'none';
+});
+
+// ✅ Modal এর বাইরে ক্লিক করলে বন্ধ হবে
+document.getElementById('article-modal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('article-modal') || e.target.className === 'close-article') {
+        document.getElementById('article-modal').style.display = 'none';
+    }
+});
                               document.querySelector('.email-link').addEventListener('click', (e) => {
             e.preventDefault();
             window.location.href = 'mailto:naturegravity638@gmail.com';
