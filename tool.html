@@ -104,7 +104,40 @@
         <div id="thumbnail-grid" class="thumbnail-grid"></div>
         <button id="back-btn" class="back-btn" style="display: none;" onclick="goBack()">Back</button>
     </main>
+<style>
+    .info-section { max-width: 800px; margin: 40px auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); text-align: center; }
+    .info-section h2 { color: #d00; margin-bottom: 10px; }
+    .info-section p, .info-section li { color: #333; font-size: 16px; line-height: 1.6; }
+    .info-section ul { list-style: none; padding: 0; }
+    .info-section ul li::before { content: "✔"; color: green; margin-right: 5px; }
+    .faq p { font-weight: bold; color: #222; cursor: pointer; margin-bottom: 5px; }
+    .faq div { display: none; }
+    @media (max-width: 768px) { .info-section { margin: 20px; padding: 15px; } .info-section h2 { font-size: 20px; } .info-section p, .info-section li { font-size: 14px; } }
+</style>
 
+<div class="info-section">
+    <h2>YT Pro Tools - Thumbnail Finder</h2>
+    <p>Generate SEO-friendly thumbnails with AI. Just enter a title & get 20+ suggestions instantly!</p>
+
+    <h2>How It Works</h2>
+    <ul><li>Enter a video title</li><li>Click "Find"</li><li>Download your favorite</li></ul>
+
+    <h2>Why Use This Tool?</h2>
+    <ul><li>Boost YouTube CTR</li><li>100% Free & No Signup</li><li>Mobile & Desktop Friendly</li></ul>
+
+    <div class="faq">
+        <h2>FAQs</h2>
+        <p onclick="toggleFAQ(0)">What is YT Pro Tools?</p><div>It helps improve YouTube content.</div>
+        <p onclick="toggleFAQ(1)">Is it free?</p><div>Yes, completely free.</div>
+        <p onclick="toggleFAQ(2)">Can I use these thumbnails?</p><div>Yes, YouTube-optimized.</div>
+    </div>
+
+    <p><strong>Contact Us:</strong> <a href="mailto:naturegravity638@gmail.com">naturegravity638@gmail.com</a></p>
+</div>
+
+<script>
+    function toggleFAQ(index) { let ans = document.querySelectorAll(".faq div"); ans[index].style.display = ans[index].style.display === "block" ? "none" : "block"; }
+</script>
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-links">
