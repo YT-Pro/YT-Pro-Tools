@@ -501,50 +501,50 @@
         <div class="box" id="box3">
             <h2 class="box-title">Coming Soon Features</h2>
         </div>
-        <!-- About Section -->
-<div class="section">
-    <h2>About YT Master</h2>
-    <p>YT Master is a free tool for YouTube creators to generate SEO-friendly titles & high-quality thumbnails.</p>
-</div>
-
-<!-- How It Works -->
-<div class="section">
-    <h2>How It Works</h2>
-    <ul>
-        <li>Enter a video title</li>
-        <li>Get 20+ suggested thumbnails</li>
-        <li>Pick & download your favorite</li>
-    </ul>
-</div>
-
-<!-- FAQs -->
-<div class="section">
-    <h2>FAQs</h2>
-    <p><strong>What is YT Master?</strong> A free tool for YouTube content.</p>
-    <p><strong>Is it free?</strong> Yes, 100% free.</p>
-    <p><strong>Do I need to sign up?</strong> No registration required.</p>
-    <p><strong>Can I use these thumbnails?</strong> Yes, fully YouTube-optimized.</p>
-    <p><strong>Does it work on mobile?</strong> Yes, mobile-friendly.</p>
-</div>
-
-<!-- Contact -->
-<p class="contact">For support:  
-    <a href="mailto:lankyposture97@gmail.com">lankyposture97@gmail.com</a>
-</p>
-
-<style>
-.section {
-    background: white; padding: 20px; margin: 20px auto; border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); max-width: 600px; text-align: center;
-}
-h2 { color: #ff0000; font-size: 22px; margin-bottom: 10px; }
-ul { list-style: none; padding: 0; }
-ul li { margin: 8px 0; font-size: 16px; color: #555; }
-p { color: #555; font-size: 15px; text-align: left; }
-.contact { font-size: 14px; font-weight: bold; color: red; text-align: center; margin-top: 20px; }
-.contact a { color: #ff0000; text-decoration: none; }
-.contact a:hover { text-decoration: underline; }
+        <style>
+    .info-box { background: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-bottom: 15px; text-align: center; }
+    .info-box h2 { color: #d90000; margin-bottom: 10px; }
+    .accordion { background: #fff; border: 1px solid #ddd; border-radius: 5px; margin: 5px 0; cursor: pointer; padding: 10px; text-align: left; font-weight: bold; }
+    .accordion-content { display: none; padding: 10px; background: #f9f9f9; border-radius: 0 0 5px 5px; }
+    .contact { font-weight: bold; color: #d90000; text-align: center; margin-top: 15px; }
 </style>
+
+<div class="info-box">
+    <h2>About YT Master</h2>
+    <p>YT Master helps YouTube creators generate SEO-friendly titles and high-quality thumbnails.</p>
+</div>
+
+<div class="info-box">
+    <h2>How It Works</h2>
+    <p>1. Enter a video title<br>2. Get 20+ suggested thumbnails<br>3. Pick & download your favorite</p>
+</div>
+
+<h2 style="text-align:center; color:#d90000;">FAQs</h2>
+
+<div class="accordion">What is YT Master?</div>
+<div class="accordion-content">A free tool to improve your YouTube content.</div>
+
+<div class="accordion">Is it free?</div>
+<div class="accordion-content">Yes, it's 100% free to use.</div>
+
+<div class="accordion">Do I need to sign up?</div>
+<div class="accordion-content">No registration required.</div>
+
+<div class="accordion">Can I use these thumbnails?</div>
+<div class="accordion-content">Yes, all thumbnails are YouTube-optimized.</div>
+
+<div class="accordion">Does it work on mobile?</div>
+<div class="accordion-content">Yes, it’s fully mobile-friendly.</div>
+
+<p class="contact">For support, email us: <a href="mailto:lankyposture97@gmail.com">lankyposture97@gmail.com</a></p>
+
+<script>
+    document.querySelectorAll(".accordion").forEach(acc => {
+        acc.addEventListener("click", function() {
+            this.nextElementSibling.style.display = this.nextElementSibling.style.display === "block" ? "none" : "block";
+        });
+    });
+</script>
         </main>
 
     <footer class="footer">
