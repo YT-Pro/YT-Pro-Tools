@@ -1251,6 +1251,20 @@ window.onload = function () {
 }
 
 // ✅ Footer লিংকগুলোর জন্য ইভেন্ট যোগ করো
+function showArticle(content) {
+    const modal = document.getElementById('article-modal');
+    const articleText = document.getElementById('article-text');
+
+    if (!modal) {
+        console.error("⚠️ Modal not found!");
+        return;
+    }
+
+    articleText.innerHTML = content;
+    modal.style.display = 'flex';
+}
+
+// ✅ ফুটারের লিংকগুলোর জন্য ইভেন্ট যুক্ত করবো (ডুপ্লিকেট সরানো হয়েছে)
 document.querySelectorAll('.footer-link').forEach(link => {
     link.addEventListener('click', (e) => {
         e.preventDefault();
@@ -1264,7 +1278,7 @@ document.querySelectorAll('.footer-link').forEach(link => {
     });
 });
 
-// ✅ ক্লোজ বাটন কাজ করবে
+// ✅ আর্টিকেল বন্ধ করার ইভেন্ট (ডুপ্লিকেট সরানো হয়েছে)
 document.querySelector('.close-article').addEventListener('click', () => {
     document.getElementById('article-modal').style.display = 'none';
 });
