@@ -620,17 +620,17 @@ Last Updated: February 22, 2025`
         }, { passive: true });
 
         function toggleMode() {
-            const body = document.body;
-            const modeToggle = document.querySelector('.mode-toggle i');
-            body.classList.toggle('night-mode');
-            if (body.classList.contains('night-mode')) {
-                modeToggle.classList.remove('fa-sun');
-                modeToggle.classList.add('fa-moon');
-            } else {
-                modeToggle.classList.remove('fa-moon');
-                modeToggle.classList.add('fa-sun');
-            }
-        }
+    document.body.classList.toggle('night-mode');
+    const isNight = document.body.classList.contains('night-mode');
+    localStorage.setItem('mode', isNight ? 'night' : 'day');
+    document.querySelector('.mode-toggle i').className = isNight ? 'fas fa-moon' : 'fas fa-sun';
+}
+
+// আগের মোড ফিরিয়ে আনবে
+if (localStorage.getItem('mode') === 'night') {
+    document.body.classList.add('night-mode');
+    document.querySelector('.mode-toggle i').className = 'fas fa-moon';
+}
 
         function showArticle(content) {
             const modal = document.getElementById('article-modal');
