@@ -1241,10 +1241,33 @@ window.onload = function () {
     const modal = document.getElementById('article-modal');
     const articleText = document.getElementById('article-text');
 
-    // ✅ textContent-এর বদলে innerHTML ব্যবহার করলাম, যাতে HTML ঠিকমতো শো হয়
-    articleText.innerHTML = content; 
+    if (!modal) {
+        console.error("Modal not found!");
+        return;
+    }
+
+    articleText.innerHTML = content;  
     modal.style.display = 'flex';
 }
+
+// ✅ Footer লিংকগুলোর জন্য ইভেন্ট যোগ করো
+document.querySelectorAll('.footer-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const page = link.getAttribute('data-page');
+        
+        if (articles[page]) {
+            showArticle(articles[page]);
+        } else {
+            alert("⚠️ Content not found!");
+        }
+    });
+});
+
+// ✅ ক্লোজ বাটন কাজ করবে
+document.querySelector('.close-article').addEventListener('click', () => {
+    document.getElementById('article-modal').style.display = 'none';
+});
 
 // 🔹 ফুটারের লিংকগুলোতে ক্লিক ইভেন্ট যুক্ত করবো
 document.querySelectorAll('.footer-link').forEach(link => {
