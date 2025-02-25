@@ -1193,16 +1193,7 @@ Last Updated: February 22, 2025`,
 
 Last Updated: February 22, 2025`
         };
-
-        document.querySelectorAll('.footer-link').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const page = link.getAttribute('data-page');
-                showArticle(articles[page]);
-            }, { passive: true });
-        });
-
-        document.querySelector('.email-link').addEventListener('click', (e) => {
+                              document.querySelector('.email-link').addEventListener('click', (e) => {
             e.preventDefault();
             window.location.href = 'mailto:naturegravity638@gmail.com';
         }, { passive: true });
@@ -1216,98 +1207,11 @@ Last Updated: February 22, 2025`
             e.preventDefault();
             window.location.href = '/';
         }, { passive: true });
-
-        function toggleMode() {
-    document.body.classList.toggle('night-mode');
-    const isNight = document.body.classList.contains('night-mode');
-
-    // ব্রাউজারে সেটিংস সংরক্ষণ
-    localStorage.setItem('mode', isNight ? 'night' : 'day');
-
-    // আইকন পরিবর্তন
-    document.querySelector('.mode-toggle i').className = isNight ? 'fas fa-moon' : 'fas fa-sun';
-}
-
-// পেজ লোড হলে আগের মোড ফিরিয়ে আনবে
-window.onload = function () {
-    const savedMode = localStorage.getItem('mode');
-    if (savedMode === 'night') {
-        document.body.classList.add('night-mode');
-        document.querySelector('.mode-toggle i').className = 'fas fa-moon';
-    }
-};
-    articleText.innerHTML = content;
-    modal.style.display = 'flex';
-}
-// ✅ ফুটারের লিংকগুলোর জন্য ইভেন্ট যুক্ত করবো (ডুপ্লিকেট সরানো হয়েছে)
-document.querySelectorAll('.footer-link').forEach(link => {
-    link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const page = link.getAttribute('data-page');
-        
-        if (articles[page]) {
-            showArticle(articles[page]);
-        } else {
-            alert("⚠️ Content not found!");
-        }
-    });
-});
-            if (e.target === document.getElementById('article-modal') || e.target.className === 'close-article') {
-                hideArticle();
-            }
-        }, { passive: true });
-    </script>
-</body>
-</html>
-querySelectorAll('.footer-link').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const page = link.getAttribute('data-page');
-                document.querySelector('.email-link').addEventListener('click', (e) => {
-            e.preventDefault();
-            window.location.href = 'mailto:naturegravity638@gmail.com';
-        }, { passive: true });
-
-        document.querySelector('.home-icon').addEventListener('click', (e) => {
-            e.preventDefault();
-            window.location.href = '/';
-        }, { passive: true });
-
-        document.querySelector('.logo').addEventListener('click', (e) => {
-            e.preventDefault();
-            window.location.href = '/';
-        }, { passive: true });
-
-        function toggleMode() {
-    document.body.classList.toggle('night-mode');
-    const isNight = document.body.classList.contains('night-mode');
-    localStorage.setItem('mode', isNight ? 'night' : 'day');
-    document.querySelector('.mode-toggle i').className = isNight ? 'fas fa-moon' : 'fas fa-sun';
-}
-
 // আগের মোড ফিরিয়ে আনবে
 if (localStorage.getItem('mode') === 'night') {
     document.body.classList.add('night-mode');
     document.querySelector('.mode-toggle i').className = 'fas fa-moon';
 }
-
-        function showArticle(content) {
-            const modal = document.getElementById('article-modal');
-            const articleText = document.getElementById('article-text');
-            articleText.textContent = content;
-            modal.style.display = 'flex';
-        }
-
-        function hideArticle() {
-            const modal = document.getElementById('article-modal');
-            modal.style.display = 'none';
-        }
-
-        document.getElementById('article-modal').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('article-modal') || e.target.className === 'close-article') {
-                hideArticle();
-            }
-        }, { passive: true });
     </script>
 </body>
 </html>
