@@ -502,31 +502,59 @@
             <h2 class="box-title">Coming Soon Features</h2>
         </div>
         <style>
-    .info-box, .accordion {background: #fff; padding: 10px; border-radius: 8px; box-shadow: 0 0 8px rgba(0,0,0,0.1); margin: 8px auto; max-width: 800px; text-align: center;}
-    .info-box h2, .accordion {color: #d90000; cursor: pointer; font-weight: bold;}
-    .accordion-content {display: none; padding: 8px; background: #f9f9f9;}
-    .contact {color: #d90000; text-align: center; font-weight: bold; margin-top: 10px;}
-    @media (max-width: 768px) {.info-box, .accordion {max-width: 90%;} .info-box p, .accordion-content {font-size: 14px;}}
+    .info-section { text-align: center; padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 5px 10px rgba(0,0,0,0.2); max-width: 800px; margin: 20px auto; }
+    h2 { color: #d10000; margin-bottom: 10px; } /* হেডিং লাল */
+    ul { list-style: none; padding: 0; }
+    ul li { margin: 5px 0; font-weight: bold; cursor: pointer; color: #000; } /* স্টেপগুলো কালো */
+    ul li:hover { text-decoration: underline; color: #d10000; } /* হোভার করলে লাল হবে */
+    .faq-answer { display: none; font-weight: normal; color: black; margin-top: 5px; }
+    .contact a { color: #d10000; font-weight: bold; text-decoration: none; }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .info-section { max-width: 90%; padding: 15px; }
+        h2 { font-size: 1.2em; }
+        ul li, .faq-answer { font-size: 1em; }
+    }
 </style>
 
-<div class="info-box"><h2>About YT Master</h2><p>YT Master helps YouTube creators generate SEO-friendly titles & high-quality thumbnails.</p></div>
-<div class="info-box"><h2>How It Works</h2><p>1. Enter a title<br>2. Get 20+ thumbnails<br>3. Pick & download</p></div>
+<div class="info-section">
+    <h2>About YT Master</h2>
+    <p>YT Master is a free tool that helps YouTube creators generate SEO-friendly titles and high-quality thumbnails.</p>
+    
+    <h2>How It Works</h2>
+    <ul>
+        <li>Enter a video title</li>
+        <li>Get 20+ suggested thumbnails</li>
+        <li>Pick & download your favorite</li>
+    </ul>
 
-<h2 class="info-box">FAQs</h2>
-<div class="accordion">What is YT Master?</div><div class="accordion-content">A free tool to enhance YouTube content.</div>
-<div class="accordion">Is it free?</div><div class="accordion-content">Yes, 100% free.</div>
-<div class="accordion">Do I need to sign up?</div><div class="accordion-content">No registration needed.</div>
-<div class="accordion">Can I use these thumbnails?</div><div class="accordion-content">Yes, fully YouTube-optimized.</div>
-<div class="accordion">Does it work on mobile?</div><div class="accordion-content">Yes, mobile-friendly.</div>
+    <h2>FAQs</h2>
+    <ul>
+        <li onclick="toggleFAQ(0)">What is YT Master?</li>
+        <p class="faq-answer">A free tool for YouTube creators.</p>
 
-<p class="contact">For support, email: <a href="mailto:lankyposture97@gmail.com">lankyposture97@gmail.com</a></p>
+        <li onclick="toggleFAQ(1)">Is it free?</li>
+        <p class="faq-answer">Yes, 100% free.</p>
+
+        <li onclick="toggleFAQ(2)">Do I need to sign up?</li>
+        <p class="faq-answer">No registration required.</p>
+
+        <li onclick="toggleFAQ(3)">Can I use these thumbnails?</li>
+        <p class="faq-answer">Yes, all are YouTube-optimized.</p>
+
+        <li onclick="toggleFAQ(4)">Does it work on mobile?</li>
+        <p class="faq-answer">Yes, fully mobile-friendly.</p>
+    </ul>
+
+    <p class="contact">For support, email: <a href="mailto:lankyposture97@gmail.com">lankyposture97@gmail.com</a></p>
+</div>
 
 <script>
-    document.querySelectorAll(".accordion").forEach(acc => {
-        acc.addEventListener("click", function() {
-            this.nextElementSibling.style.display = this.nextElementSibling.style.display === "block" ? "none" : "block";
-        });
-    });
+    function toggleFAQ(index) {
+        let answers = document.querySelectorAll('.faq-answer');
+        answers[index].style.display = answers[index].style.display === "block" ? "none" : "block";
+    }
 </script>
         </main>
 
