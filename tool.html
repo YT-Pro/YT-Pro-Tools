@@ -1432,6 +1432,47 @@ if (apiKey) {
 } else {
     alert("API Key is required!");
 }
+        function searchThumbnails() {
+    let apiKey = localStorage.getItem("YT_API_KEY");
+
+    if (!apiKey) {
+        apiKey = prompt("Enter your YouTube API Key:");
+        if (apiKey) {
+            localStorage.setItem("YT_API_KEY", apiKey);
+            console.log("API Key Saved:", apiKey);
+        } else {
+            alert("API Key is required!");
+            return;
+        }
+    }
+
+    const query = document.querySelector('.search-bar').value.trim();
+
+    if (!query) {
+        alert('Please enter a video title!');
+        return;
+    }
+
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&maxResults=20&type=video&key=${apiKey}`;
+
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            const grid = document.getElementById('thumbnail-container');
+            grid.innerHTML = '';
+            data.items.forEach(item => {
+                const videoId = item.id.videoId;
+                const thumbnailUrl = item.snippet.thumbnails.medium.url;
+
+                const thumbDiv = document.createElement('div');
+                thumbDiv.className = 'thumbnail-item';
+                thumbDiv.innerHTML = `<img src="${thumbnailUrl}" alt="Thumbnail" style="width: 100%; border-radius: 10px;">`;
+
+                grid.appendChild(thumbDiv);
+            });
+        })
+        .catch(error => console.error('Error fetching data:', error));
+}
     </script>
 </body>
 </html>
