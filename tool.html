@@ -716,20 +716,13 @@ Last Updated: February 22, 2025`
                 hideArticle();
             }
         }, { passive: true });
-        // API Key লোড এবং সংরক্ষণ করা
-if (!localStorage.getItem("YT_API_KEY")) { // এখানে ! (NOT) যোগ করা হলো
-    const userKey = prompt("Enter your YouTube API Key:");
-    if (userKey) {
-        localStorage.setItem("YT_API_KEY", userKey);
-        alert("API Key Saved!");
-    } else {
-        alert("API Key is required!");
-    }
+const apiKey = localStorage.getItem("YT_API_KEY") || prompt("Enter your YouTube API Key:");
+if (apiKey) {
+    localStorage.setItem("YT_API_KEY", apiKey);
+    console.log("API Key Loaded:", apiKey);
+} else {
+    alert("API Key is required!");
 }
-
-// Local Storage থেকে API Key পড়ুন
-const apiKey = localStorage.getItem("YT_API_KEY");
-console.log("API Key Loaded:", apiKey);
     </script>
 </body>
 </html>
