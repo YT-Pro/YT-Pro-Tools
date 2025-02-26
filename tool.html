@@ -31,9 +31,25 @@
         body.night-mode .search-btn:hover { background: #aa0000; }
         .main-content { flex: 1; margin: 20px 10px 60px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: calc(100vh - 120px); }
         .thumbnail-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 1200px; }
-        .thumbnail { width: 200px; height: 150px; background: #fff; border-radius: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); cursor: pointer; transition: transform 0.3s; }
-        .thumbnail:hover { transform: scale(1.05); }
+        .thumbnail { 
+            width: 300px; 
+            height: 200px; 
+            background: #fff; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); 
+            transform: perspective(1000px) rotateX(5deg); 
+            transition: transform 0.3s; 
+            cursor: pointer; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding-bottom: 10px; 
+        }
+        .thumbnail:hover { transform: scale(1.05) perspective(1000px) rotateX(0deg); }
+        .thumbnail img { width: 100%; height: 80%; object-fit: cover; border-radius: 15px 15px 0 0; }
+        .thumbnail-title { font-size: 14px; text-align: center; padding: 5px; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
         body.night-mode .thumbnail { background: #444; }
+        body.night-mode .thumbnail-title { color: #f0f0f0; }
         .back-btn { padding: 10px 20px; margin-top: 20px; font-size: 1em; background: #ff0000; color: white; border: none; border-radius: 5px; box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); cursor: pointer; transition: background 0.3s; }
         .back-btn:hover { background: #cc0000; }
         body.night-mode .back-btn { background: #cc0000; }
@@ -61,6 +77,7 @@
             .search-btn { padding: 10px 20px; font-size: 1em; }
             .main-content { margin: 10px 5px 50px; }
             .thumbnail { width: 150px; height: 100px; }
+            .thumbnail-title { font-size: 12px; }
             .footer { height: 40px; padding: 5px; }
             .home-icon { font-size: 1em; }
             .footer-link, .email-link { font-size: 0.7em; }
@@ -223,8 +240,8 @@
                 return;
             }
 
-            // Step 1: Search for videos
-            const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&maxResults=30&type=video&key=${apiKey}`;
+            // Step 1: Search for videos (excluding Shorts)
+            const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&maxResults=50&type=video&videoDuration=medium|long&key=${apiKey}`;
             fetch(searchUrl)
                 .then(response => response.json())
                 .then(data => {
@@ -243,6 +260,7 @@
                     let sortedItems = data.items.map(item => ({
                         videoId: item.id,
                         thumbnailUrl: item.snippet.thumbnails.medium.url,
+                        title: item.snippet.title,
                         views: parseInt(item.statistics.viewCount || 0),
                         likes: parseInt(item.statistics.likeCount || 0),
                         comments: parseInt(item.statistics.commentCount || 0),
@@ -261,7 +279,10 @@
                     top20.forEach((item, index) => {
                         const thumbDiv = document.createElement('div');
                         thumbDiv.className = 'thumbnail';
-                        thumbDiv.innerHTML = `<img src="${item.thumbnailUrl}" alt="Thumbnail ${index + 1}" style="width: 100%; height: 100%; object-fit: cover;" onclick="showMoreThumbnails(${index})">`;
+                        thumbDiv.innerHTML = `
+                            <img src="${item.thumbnailUrl}" alt="${item.title}" onclick="showMoreThumbnails(${index})">
+                            <div class="thumbnail-title">${item.title}</div>
+                        `;
                         grid.appendChild(thumbDiv);
                     });
 
@@ -280,7 +301,8 @@
                 const thumbDiv = document.createElement('div');
                 thumbDiv.className = 'thumbnail';
                 thumbDiv.innerHTML = `
-                    <img src="${item.thumbnailUrl}" alt="Related Thumbnail ${idx + 1}" style="width: 100%; height: 100%; object-fit: cover;" onclick="downloadThumbnail('${item.thumbnailUrl}')">
+                    <img src="${item.thumbnailUrl}" alt="${item.title}" onclick="downloadThumbnail('${item.thumbnailUrl}')">
+                    <div class="thumbnail-title">${item.title}</div>
                 `;
                 grid.appendChild(thumbDiv);
             });
@@ -296,7 +318,10 @@
             top20.forEach((item, index) => {
                 const thumbDiv = document.createElement('div');
                 thumbDiv.className = 'thumbnail';
-                thumbDiv.innerHTML = `<img src="${item.thumbnailUrl}" alt="Thumbnail ${index + 1}" style="width: 100%; height: 100%; object-fit: cover;" onclick="showMoreThumbnails(${index})">`;
+                thumbDiv.innerHTML = `
+                    <img src="${item.thumbnailUrl}" alt="${item.title}" onclick="showMoreThumbnails(${index})">
+                    <div class="thumbnail-title">${item.title}</div>
+                `;
                 grid.appendChild(thumbDiv);
             });
 
@@ -317,7 +342,7 @@
             const userKey = prompt("Enter your YouTube API Key:");
             if (userKey) {
                 localStorage.setItem("YT_API_KEY", userKey);
-    alert("API Key Saved!");
+                alert("API Key Saved!");
             } else {
                 alert("API Key is required!");
             }
