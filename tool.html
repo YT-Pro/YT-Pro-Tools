@@ -211,106 +211,120 @@
         document.getElementById('article-modal').addEventListener('click', (e) => {
             if (e.target.id === 'article-modal') hideArticle();
         });
-let initialThumbnails = [];
-let selectedThumbnail = null;
 
-function searchThumbnails() {
-    const apiKey = localStorage.getItem("YT_API_KEY");
-    const query = document.querySelector('.search-bar').value.trim();
+        let initialThumbnails = [];
 
-    if (!query) {
-        alert('Please enter a video title!');
-        return;
-    }
+        function searchThumbnails() {
+            const apiKey = localStorage.getItem("YT_API_KEY");
+            const query = document.querySelector('.search-bar').value.trim();
 
-    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&maxResults=20&type=video&key=${apiKey}`;
+            if (!query) {
+                alert('Please enter a video title!');
+                return;
+            }
 
-    fetch(url)
-        .then(response => response.json())
-        .then(data => {
+            // Step 1: Search for videos
+            const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&maxResults=30&type=video&key=${apiKey}`;
+            fetch(searchUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const videoIds = data.items.map(item => item.id.videoId).join(',');
+
+                    // Step 2: Fetch statistics for the videos
+                    const statsUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${videoIds}&key=${apiKey}`;
+                    return fetch(statsUrl);
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const grid = document.getElementById('thumbnail-grid');
+                    grid.innerHTML = '';
+
+                    // Process and sort videos by combined stats
+                    let sortedItems = data.items.map(item => ({
+                        videoId: item.id,
+                        thumbnailUrl: item.snippet.thumbnails.medium.url,
+                        views: parseInt(item.statistics.viewCount || 0),
+                        likes: parseInt(item.statistics.likeCount || 0),
+                        comments: parseInt(item.statistics.commentCount || 0),
+                        shares: parseInt(item.statistics.favoriteCount || 0) // Using favoriteCount as proxy for shares
+                    }));
+
+                    sortedItems.sort((a, b) => {
+                        const scoreA = a.views + a.likes + a.comments + a.shares;
+                        const scoreB = b.views + b.likes + b.comments + b.shares;
+                        return scoreB - scoreA;
+                    });
+
+                    initialThumbnails = sortedItems.slice(0, 30); // Store 30 for later use
+                    const top20 = initialThumbnails.slice(0, 20); // Show first 20
+
+                    top20.forEach((item, index) => {
+                        const thumbDiv = document.createElement('div');
+                        thumbDiv.className = 'thumbnail';
+                        thumbDiv.innerHTML = `<img src="${item.thumbnailUrl}" alt="Thumbnail ${index + 1}" style="width: 100%; height: 100%; object-fit: cover;" onclick="showMoreThumbnails(${index})">`;
+                        grid.appendChild(thumbDiv);
+                    });
+
+                    document.getElementById('back-btn').style.display = 'none';
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+
+        function showMoreThumbnails(index) {
             const grid = document.getElementById('thumbnail-grid');
             grid.innerHTML = '';
 
-            let sortedItems = data.items.map(item => ({
-                videoId: item.id.videoId,
-                thumbnailUrl: item.snippet.thumbnails.medium.url,
-                views: Math.floor(Math.random() * 1000000),
-                likes: Math.floor(Math.random() * 50000),
-                comments: Math.floor(Math.random() * 10000),
-                shares: Math.floor(Math.random() * 5000)
-            }));
+            const relatedThumbnails = initialThumbnails.slice(20, 30); // Show next 10
 
-            sortedItems.sort((a, b) => {
-                const scoreA = a.views + a.likes + a.comments + a.shares;
-                const scoreB = b.views + b.likes + b.comments + b.shares;
-                return scoreB - scoreA;
-            });
-
-            initialThumbnails = sortedItems.slice(0, 20);
-            initialThumbnails.forEach((item, index) => {
+            relatedThumbnails.forEach((item, idx) => {
                 const thumbDiv = document.createElement('div');
                 thumbDiv.className = 'thumbnail';
-                thumbDiv.innerHTML = `<img src="${item.thumbnailUrl}" alt="Thumbnail ${index + 1}" onclick="showMoreThumbnails(${index})">`;
+                thumbDiv.innerHTML = `
+                    <img src="${item.thumbnailUrl}" alt="Related Thumbnail ${idx + 1}" style="width: 100%; height: 100%; object-fit: cover;" onclick="downloadThumbnail('${item.thumbnailUrl}')">
+                `;
+                grid.appendChild(thumbDiv);
+            });
+
+            document.getElementById('back-btn').style.display = 'block';
+        }
+
+        function goBack() {
+            const grid = document.getElementById('thumbnail-grid');
+            grid.innerHTML = '';
+
+            const top20 = initialThumbnails.slice(0, 20);
+            top20.forEach((item, index) => {
+                const thumbDiv = document.createElement('div');
+                thumbDiv.className = 'thumbnail';
+                thumbDiv.innerHTML = `<img src="${item.thumbnailUrl}" alt="Thumbnail ${index + 1}" style="width: 100%; height: 100%; object-fit: cover;" onclick="showMoreThumbnails(${index})">`;
                 grid.appendChild(thumbDiv);
             });
 
             document.getElementById('back-btn').style.display = 'none';
-        })
-        .catch(error => console.error('Error fetching data:', error));
-}
-
-function showMoreThumbnails(index) {
-    const grid = document.getElementById('thumbnail-grid');
-    grid.innerHTML = '';
-
-    for (let i = 20; i < 30; i++) {
-        if (initialThumbnails[i]) {
-            const thumbDiv = document.createElement('div');
-            thumbDiv.className = 'thumbnail';
-            thumbDiv.innerHTML = `<img src="${initialThumbnails[i].thumbnailUrl}" alt="More Thumbnail ${i - 19}" onclick="downloadThumbnail('${initialThumbnails[i].thumbnailUrl}')">`;
-            grid.appendChild(thumbDiv);
         }
-    }
 
-    document.getElementById('back-btn').style.display = 'block';
-}
+        function downloadThumbnail(url) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'thumbnail.jpg';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
 
-function goBack() {
-    const grid = document.getElementById('thumbnail-grid');
-    grid.innerHTML = '';
+        // API Key Management
+        if (!localStorage.getItem("YT_API_KEY")) {
+            const userKey = prompt("Enter your YouTube API Key:");
+            if (userKey) {
+                localStorage.setItem("YT_API_KEY", userKey);
+    alert("API Key Saved!");
+            } else {
+                alert("API Key is required!");
+            }
+        }
 
-    initialThumbnails.forEach((item, index) => {
-        const thumbDiv = document.createElement('div');
-        thumbDiv.className = 'thumbnail';
-        thumbDiv.innerHTML = `<img src="${item.thumbnailUrl}" alt="Thumbnail ${index + 1}" onclick="showMoreThumbnails(${index})">`;
-        grid.appendChild(thumbDiv);
-    });
-
-    document.getElementById('back-btn').style.display = 'none';
-}
-
-function downloadThumbnail(url) {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'thumbnail.jpg';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-}
-
-// API Key Management
-if (!localStorage.getItem("YT_API_KEY")) {
-    const userKey = prompt("Enter your YouTube API Key:");
-    if (userKey) {
-        localStorage.setItem("YT_API_KEY", userKey);
-        alert("API Key Saved!");
-    } else {
-        alert("API Key is required!");
-    }
-}
-
-const apiKey = localStorage.getItem("YT_API_KEY");
-console.log("API Key Loaded:", apiKey);
-</script>
+        const apiKey = localStorage.getItem("YT_API_KEY");
+        console.log("API Key Loaded:", apiKey);
+    </script>
 </body>
 </html>
