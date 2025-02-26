@@ -216,7 +216,7 @@
         let selectedThumbnail = null;
 
         function searchThumbnails() {
-    const apiKey = "";
+    const apiKey = localStorage.getItem("YT_API_KEY");
     const query = document.querySelector('.search-bar').value.trim();
     
     if (!query) {
