@@ -1433,21 +1433,9 @@ if (apiKey) {
     alert("API Key is required!");
 }
         function searchThumbnails() {
-    let apiKey = localStorage.getItem("YT_API_KEY");
-
-    if (!apiKey) {
-        apiKey = prompt("Enter your YouTube API Key:");
-        if (apiKey) {
-            localStorage.setItem("YT_API_KEY", apiKey);
-            console.log("API Key Saved:", apiKey);
-        } else {
-            alert("API Key is required!");
-            return;
-        }
-    }
+    const apiKey = localStorage.getItem("YT_API_KEY");
 
     const query = document.querySelector('.search-bar').value.trim();
-
     if (!query) {
         alert('Please enter a video title!');
         return;
@@ -1458,18 +1446,29 @@ if (apiKey) {
     fetch(url)
         .then(response => response.json())
         .then(data => {
-            const grid = document.getElementById('thumbnail-container');
+            const grid = document.getElementById('thumbnail-grid');
             grid.innerHTML = '';
-            data.items.forEach(item => {
+
+            // প্রথম ২০টি থাম্বনেল দেখাবে (ভিউ, লাইক, শেয়ার, কমেন্ট অনুযায়ী সাজানো)
+            const sortedItems = data.items.sort((a, b) => {
+                const scoreA = (a.statistics?.viewCount || 0) + (a.statistics?.likeCount || 0) + (a.statistics?.commentCount || 0);
+                const scoreB = (b.statistics?.viewCount || 0) + (b.statistics?.likeCount || 0) + (b.statistics?.commentCount || 0);
+                return scoreB - scoreA;
+            });
+
+            initialThumbnails = sortedItems.slice(0, 20).map((item, index) => {
                 const videoId = item.id.videoId;
                 const thumbnailUrl = item.snippet.thumbnails.medium.url;
 
                 const thumbDiv = document.createElement('div');
-                thumbDiv.className = 'thumbnail-item';
-                thumbDiv.innerHTML = `<img src="${thumbnailUrl}" alt="Thumbnail" style="width: 100%; border-radius: 10px;">`;
-
+                thumbDiv.className = 'thumbnail';
+                thumbDiv.innerHTML = `<img src="${thumbnailUrl}" alt="Thumbnail ${index + 1}" onclick="showMoreThumbnails(${index})">`;
                 grid.appendChild(thumbDiv);
+
+                return thumbDiv;
             });
+
+            document.getElementById('back-btn').style.display = 'none';
         })
         .catch(error => console.error('Error fetching data:', error));
 }
