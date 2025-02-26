@@ -31,25 +31,9 @@
         body.night-mode .search-btn:hover { background: #aa0000; }
         .main-content { flex: 1; margin: 20px 10px 60px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: calc(100vh - 120px); }
         .thumbnail-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 1200px; }
-        .thumbnail { 
-            width: 300px; 
-            height: 200px; 
-            background: #fff; 
-            border-radius: 15px; 
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); 
-            transform: perspective(1000px) rotateX(5deg); 
-            transition: transform 0.3s; 
-            cursor: pointer; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            padding-bottom: 10px; 
-        }
-        .thumbnail:hover { transform: scale(1.05) perspective(1000px) rotateX(0deg); }
-        .thumbnail img { width: 100%; height: 80%; object-fit: cover; border-radius: 15px 15px 0 0; }
-        .thumbnail-title { font-size: 14px; text-align: center; padding: 5px; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
+        .thumbnail { width: 200px; height: 150px; background: #fff; border-radius: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); cursor: pointer; transition: transform 0.3s; }
+        .thumbnail:hover { transform: scale(1.05); }
         body.night-mode .thumbnail { background: #444; }
-        body.night-mode .thumbnail-title { color: #f0f0f0; }
         .back-btn { padding: 10px 20px; margin-top: 20px; font-size: 1em; background: #ff0000; color: white; border: none; border-radius: 5px; box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); cursor: pointer; transition: background 0.3s; }
         .back-btn:hover { background: #cc0000; }
         body.night-mode .back-btn { background: #cc0000; }
@@ -77,7 +61,6 @@
             .search-btn { padding: 10px 20px; font-size: 1em; }
             .main-content { margin: 10px 5px 50px; }
             .thumbnail { width: 150px; height: 100px; }
-            .thumbnail-title { font-size: 12px; }
             .footer { height: 40px; padding: 5px; }
             .home-icon { font-size: 1em; }
             .footer-link, .email-link { font-size: 0.7em; }
@@ -240,38 +223,19 @@
                 return;
             }
 
-            // Step 1: Search for videos (excluding Shorts)
-            const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&maxResults=50&type=video&videoDuration=medium|long&key=${apiKey}`;
+            // Step 1: Search for videos
+            const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&maxResults=30&type=video&key=${apiKey}`;
             fetch(searchUrl)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Search API Error: ${response.status} - ${response.statusText}`);
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
-                    if (!data.items || data.items.length === 0) {
-                        alert('No videos found for this title!');
-                        return;
-                    }
                     const videoIds = data.items.map(item => item.id.videoId).join(',');
 
                     // Step 2: Fetch statistics for the videos
                     const statsUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${videoIds}&key=${apiKey}`;
                     return fetch(statsUrl);
                 })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Videos API Error: ${response.status} - ${response.statusText}`);
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
-                    if (!data.items || data.items.length === 0) {
-                        alert('No video data available!');
-                        return;
-                    }
-
                     const grid = document.getElementById('thumbnail-grid');
                     grid.innerHTML = '';
 
@@ -279,7 +243,6 @@
                     let sortedItems = data.items.map(item => ({
                         videoId: item.id,
                         thumbnailUrl: item.snippet.thumbnails.medium.url,
-                        title: item.snippet.title,
                         views: parseInt(item.statistics.viewCount || 0),
                         likes: parseInt(item.statistics.likeCount || 0),
                         comments: parseInt(item.statistics.commentCount || 0),
@@ -298,20 +261,15 @@
                     top20.forEach((item, index) => {
                         const thumbDiv = document.createElement('div');
                         thumbDiv.className = 'thumbnail';
-                        thumbDiv.innerHTML = `
-                            <img src="${item.thumbnailUrl}" alt="${item.title}" onclick="showMoreThumbnails(${index})">
-                            <div class="thumbnail-title">${item.title}</div>
-                        `;
+                        thumbDiv.innerHTML = `<img src="${item.thumbnailUrl}" alt="Thumbnail ${index + 1}" style="width: 100%; height: 100%; object-fit: cover;" onclick="showMoreThumbnails(${index})">`;
                         grid.appendChild(thumbDiv);
                     });
 
                     document.getElementById('back-btn').style.display = 'none';
                 })
-                .catch(error => {
-                    console.error('Error fetching data:', error);
-                    alert('An error occurred while fetching thumbnails. Please check your API key or try again later.');
-                });
+                .catch(error => console.error('Error fetching data:', error));
         }
+
         function showMoreThumbnails(index) {
             const grid = document.getElementById('thumbnail-grid');
             grid.innerHTML = '';
@@ -322,8 +280,7 @@
                 const thumbDiv = document.createElement('div');
                 thumbDiv.className = 'thumbnail';
                 thumbDiv.innerHTML = `
-                    <img src="${item.thumbnailUrl}" alt="${item.title}" onclick="downloadThumbnail('${item.thumbnailUrl}')">
-                    <div class="thumbnail-title">${item.title}</div>
+                    <img src="${item.thumbnailUrl}" alt="Related Thumbnail ${idx + 1}" style="width: 100%; height: 100%; object-fit: cover;" onclick="downloadThumbnail('${item.thumbnailUrl}')">
                 `;
                 grid.appendChild(thumbDiv);
             });
@@ -339,10 +296,7 @@
             top20.forEach((item, index) => {
                 const thumbDiv = document.createElement('div');
                 thumbDiv.className = 'thumbnail';
-                thumbDiv.innerHTML = `
-                    <img src="${item.thumbnailUrl}" alt="${item.title}" onclick="showMoreThumbnails(${index})">
-                    <div class="thumbnail-title">${item.title}</div>
-                `;
+                thumbDiv.innerHTML = `<img src="${item.thumbnailUrl}" alt="Thumbnail ${index + 1}" style="width: 100%; height: 100%; object-fit: cover;" onclick="showMoreThumbnails(${index})">`;
                 grid.appendChild(thumbDiv);
             });
 
@@ -357,7 +311,6 @@
             a.click();
             document.body.removeChild(a);
         }
-
         // API Key Management
         if (!localStorage.getItem("YT_API_KEY")) {
             const userKey = prompt("Enter your YouTube API Key:");
