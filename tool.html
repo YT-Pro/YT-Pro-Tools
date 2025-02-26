@@ -216,21 +216,42 @@
         let selectedThumbnail = null;
 
         function searchThumbnails() {
-            const query = document.querySelector('.search-bar').value.trim();
-            if (!query) { alert('Please enter a video title!'); return; }
+    const apiKey = "AIzaSyA0VP8QY2I1c7R654sFPoxLatxHXNLBEAM";
+    const query = document.querySelector('.search-bar').value.trim();
+    
+    if (!query) {
+        alert('Please enter a video title!');
+        return;
+    }
+
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&maxResults=20&type=video&key=${apiKey}`;
+
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
             const grid = document.getElementById('thumbnail-grid');
             grid.innerHTML = '';
-            document.getElementById('back-btn').style.display = 'none';
-            initialThumbnails = [];
-            for (let i = 1; i <= 20; i++) {
-                const thumb = document.createElement('div');
-                thumb.className = 'thumbnail';
-                thumb.textContent = `Thumbnail ${i}`;
-                thumb.onclick = () => showMoreThumbnails(i);
-                grid.appendChild(thumb);
-                initialThumbnails.push(thumb);
-            }
-        }
+            data.items.forEach((item, index) => {
+                const videoId = item.id.videoId;
+                const thumbnailUrl = item.snippet.thumbnails.medium.url;
+
+                const thumbDiv = document.createElement('div');
+                thumbDiv.className = 'thumbnail';
+                thumbDiv.innerHTML = `<img src="${thumbnailUrl}" alt="Thumbnail ${index + 1}" onclick="downloadThumbnail('${thumbnailUrl}')">`;
+                grid.appendChild(thumbDiv);
+            });
+        })
+        .catch(error => console.error('Error fetching data:', error));
+}
+
+function downloadThumbnail(url) {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'thumbnail.jpg';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
 
         function showMoreThumbnails(index) {
             const grid = document.getElementById('thumbnail-grid');
