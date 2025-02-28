@@ -31,25 +31,9 @@
         body.night-mode .search-btn:hover { background: #aa0000; }
         .main-content { flex: 1; margin: 20px 10px 60px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: calc(100vh - 120px); }
         .thumbnail-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 1200px; }
-        .thumbnail { 
-            width: 200px; 
-            height: 150px; 
-            background: #fff; 
-            border-radius: 10px; 
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); 
-            transform: perspective(1000px) rotateX(5deg); 
-            transition: transform 0.3s; 
-            cursor: pointer; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            padding-bottom: 10px; 
-        }
-        .thumbnail:hover { transform: scale(1.05) perspective(1000px) rotateX(0deg); }
-        .thumbnail img { width: 100%; height: 80%; object-fit: cover; border-radius: 10px 10px 0 0; }
-        .thumbnail-title { font-size: 14px; text-align: center; padding: 5px; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
+        .thumbnail { width: 200px; height: 150px; background: #fff; border-radius: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); cursor: pointer; transition: transform 0.3s; }
+        .thumbnail:hover { transform: scale(1.05); }
         body.night-mode .thumbnail { background: #444; }
-        body.night-mode .thumbnail-title { color: #f0f0f0; }
         .back-btn { padding: 10px 20px; margin-top: 20px; font-size: 1em; background: #ff0000; color: white; border: none; border-radius: 5px; box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); cursor: pointer; transition: background 0.3s; }
         .back-btn:hover { background: #cc0000; }
         body.night-mode .back-btn { background: #cc0000; }
@@ -77,7 +61,6 @@
             .search-btn { padding: 10px 20px; font-size: 1em; }
             .main-content { margin: 10px 5px 50px; }
             .thumbnail { width: 150px; height: 100px; }
-            .thumbnail-title { font-size: 12px; }
             .footer { height: 40px; padding: 5px; }
             .home-icon { font-size: 1em; }
             .footer-link, .email-link { font-size: 0.7em; }
@@ -230,155 +213,88 @@
         });
 
         let initialThumbnails = [];
+        let selectedThumbnail = null;
 
         function searchThumbnails() {
-            const apiKey = localStorage.getItem("YT_API_KEY");
-            const query = document.querySelector('.search-bar').value.trim();
+    const apiKey = localStorage.getItem("YT_API_KEY");
+    const query = document.querySelector('.search-bar').value.trim();
 
-            if (!query) {
-                alert('Please enter a video title!');
-                return;
-            }
+    if (!query) {
+        alert('Please enter a video title!');
+        return;
+    }
 
-            // Step 1: Search for videos (excluding Shorts)
-            const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&maxResults=50&type=video&videoDuration=medium|long&key=${apiKey}`;
-            fetch(searchUrl)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Search API Error: ${response.status} - ${response.statusText}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (!data.items || data.items.length === 0) {
-                        alert('No long videos found for this title! Please try a different search.');
-                        return;
-                    }
-                    const videoIds = data.items.map(item => item.id.videoId).join(',');
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&maxResults=20&type=video&key=${apiKey}`;
 
-                    // Step 2: Fetch statistics for the videos
-                    const statsUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${videoIds}&key=${apiKey}`;
-                    return fetch(statsUrl);
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Videos API Error: ${response.status} - ${response.statusText}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (!data.items || data.items.length === 0) {
-                        alert('No video data available! Please check your API key or try again later.');
-                        return;
-                    }
-
-                    const grid = document.getElementById('thumbnail-grid');
-                    grid.innerHTML = '';
-
-                    // Process and filter out Shorts, sort by combined stats
-                    let sortedItems = data.items
-                        .filter(item => item.snippet.liveBroadcastContent !== 'live' && !item.snippet.title.toLowerCase().includes('shorts'))
-                        .map(item => ({
-                            videoId: item.id,
-                            thumbnailUrl: item.snippet.thumbnails.medium.url,
-                            title: item.snippet.title,
-                            views: parseInt(item.statistics.viewCount || 0),
-                            likes: parseInt(item.statistics.likeCount || 0),
-                            comments: parseInt(item.statistics.commentCount || 0),
-                            shares: parseInt(item.statistics.favoriteCount || 0) // Using favoriteCount as proxy for shares
-                        }));
-
-                    if (sortedItems.length === 0) {
-                        alert('No long videos found for this title! Please try a different search.');
-                        return;
-                    }
-
-                    sortedItems.sort((a, b) => {
-                        const scoreA = a.views + a.likes + a.comments + a.shares;
-                        const scoreB = b.views + b.likes + b.comments + b.shares;
-                        return scoreB - scoreA;
-                    });
-
-                    initialThumbnails = sortedItems.slice(0, 30); // Store 30 for later use
-                    const top20 = initialThumbnails.slice(0, 20); // Show first 20
-
-                    top20.forEach((item, index) => {
-                        const thumbDiv = document.createElement('div');
-                        thumbDiv.className = 'thumbnail';
-                        thumbDiv.innerHTML = `
-                            <img src="${item.thumbnailUrl}" alt="${item.title}" onclick="showMoreThumbnails(${index})">
-                            <div class="thumbnail-title">${item.title}</div>
-                        `;
-                        grid.appendChild(thumbDiv);
-                    });
-
-                    document.getElementById('back-btn').style.display = 'none';
-                })
-                .catch(error => {
-                    console.error('Error fetching data:', error);
-                    alert('An error occurred while fetching thumbnails. Please check your API key or try again later.');
-                });
-        }
-
-        function showMoreThumbnails(index) {
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
             const grid = document.getElementById('thumbnail-grid');
             grid.innerHTML = '';
 
-            const relatedThumbnails = initialThumbnails.slice(20, 30); // Show next 10
+            // প্রথম ২০টি থাম্বনেল দেখাবে
+            data.items.slice(0, 20).forEach((item, index) => {
+                const videoId = item.id.videoId;
+                const thumbnailUrl = item.snippet.thumbnails.medium.url;
 
-            relatedThumbnails.forEach((item, idx) => {
                 const thumbDiv = document.createElement('div');
                 thumbDiv.className = 'thumbnail';
-                thumbDiv.innerHTML = `
-                    <img src="${item.thumbnailUrl}" alt="${item.title}" onclick="downloadThumbnail('${item.thumbnailUrl}')">
-                    <div class="thumbnail-title">${item.title}</div>
-                `;
+                thumbDiv.innerHTML = `<img src="${thumbnailUrl}" alt="Thumbnail ${index + 1}" onclick="showMoreThumbnails(${index}, '${videoId}')">`;
                 grid.appendChild(thumbDiv);
             });
 
-            document.getElementById('back-btn').style.display = 'block';
+            // ব্যাক বাটন হাইড করা
+            document.getElementById('back-btn').style.display = 'none';
+        })
+        .catch(error => console.error('Error fetching data:', error));
+}
+function downloadThumbnail(url) {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'thumbnail.jpg';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+        function showMoreThumbnails() {
+    const grid = document.getElementById('thumbnail-grid');
+    grid.innerHTML = '';
+
+    for (let i = 20; i < 30; i++) { // আগের ২০টি লুকিয়ে নতুন ১০টি দেখাবে
+        if (initialThumbnails[i]) {
+            grid.appendChild(initialThumbnails[i]);
         }
+    }
+
+    document.getElementById('back-btn').style.display = 'block'; // ব্যাক বাটন দেখাবে
+}
 
         function goBack() {
-            const grid = document.getElementById('thumbnail-grid');
-            grid.innerHTML = '';
+    const grid = document.getElementById('thumbnail-grid');
+    grid.innerHTML = '';
 
-            const top20 = initialThumbnails.slice(0, 20);
-            top20.forEach((item, index) => {
-                const thumbDiv = document.createElement('div');
-                thumbDiv.className = 'thumbnail';
-                thumbDiv.innerHTML = `
-                    <img src="${item.thumbnailUrl}" alt="${item.title}" onclick="showMoreThumbnails(${index})">
-                    <div class="thumbnail-title">${item.title}</div>
-                `;
-                grid.appendChild(thumbDiv);
-            });
-
-            document.getElementById('back-btn').style.display = 'none';
+    for (let i = 0; i < 20; i++) { // প্রথম ২০টি থাম্বনেল আবার দেখাবে
+        if (initialThumbnails[i]) {
+            grid.appendChild(initialThumbnails[i]);
         }
+    }
 
-        function downloadThumbnail(url) {
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'thumbnail.jpg';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
+    document.getElementById('back-btn').style.display = 'none'; // ব্যাক বাটন লুকাবে
+}
+if (!localStorage.getItem("YT_API_KEY")) { // এখানে ! (NOT) যোগ করা হলো
+    const userKey = prompt("Enter your YouTube API Key:");
+    if (userKey) {
+        localStorage.setItem("YT_API_KEY", userKey);
+        alert("API Key Saved!");
+    } else {
+        alert("API Key is required!");
+    }
+}
 
-        // API Key Management
-        if (!localStorage.getItem("YT_API_KEY")) {
-            const userKey = prompt("Enter your YouTube API Key:");
-            if (userKey) {
-                localStorage.setItem("YT_API_KEY", userKey);
-                alert("API Key Saved!");
-            } else {
-                alert("API Key is required!");
-            }
-        }
-
-        const apiKey = localStorage.getItem("YT_API_KEY");
-        console.log("API Key Loaded:", apiKey);
+// Local Storage থেকে API Key পড়ুন
+const apiKey = localStorage.getItem("YT_API_KEY");
+console.log("API Key Loaded:", apiKey);
     </script>
 </body>
 </html>
