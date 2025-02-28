@@ -261,6 +261,7 @@
         let initialThumbnails = [];
         let selectedThumbnail = null;
         let initialLongVideos = [];
+        let previousSearches = new Map(); // নতুন যোগ: আগের সার্চ ট্র্যাক করার জন্য
 
         function searchThumbnails() {
             const apiKey = localStorage.getItem("YT_API_KEY");
@@ -272,9 +273,14 @@
             }
 
             const grid = document.getElementById('thumbnail-grid');
-            grid.innerHTML = ''; // দ্রুত শো করার জন্য প্রথমে গ্রিড খালি করা
+            grid.innerHTML = '';
 
-            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&maxResults=50&type=video&key=${apiKey}`;
+            // আগের সার্চের জন্য অফসেট বাড়ানো
+            let offset = previousSearches.get(query) || 0;
+            offset += 50; // প্রতিবার ৫০টি নতুন রেজাল্টের দিকে যাওয়া
+            previousSearches.set(query, offset);
+
+            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&maxResults=50&type=video&key=${apiKey}&startIndex=${offset}`;
 
             fetch(url)
                 .then(response => response.json())
@@ -291,7 +297,6 @@
                                 return time > 240;
                             });
 
-                            // যদি ৩০টির কম থাকে, তবে উপর থেকে নিচে পূরণ করা
                             if (longVideos.length < 30) {
                                 const additionalVideos = videoData.items
                                     .filter(video => !longVideos.includes(video))
@@ -299,10 +304,10 @@
                                 longVideos = longVideos.concat(additionalVideos);
                             }
 
-                            initialLongVideos = longVideos.slice(0, 30); // ৩০টি নিশ্চিত করা
+                            initialLongVideos = longVideos.slice(0, 30);
 
                             initialLongVideos.forEach((video, index) => {
-                                const thumbnailUrl = video.snippet.thumbnails.high.url; // এইচডি কোয়ালিটি
+                                const thumbnailUrl = video.snippet.thumbnails.maxres ? video.snippet.thumbnails.maxres.url : video.snippet.thumbnails.high.url; // 1080p বা তার কাছাকাছি
                                 const title = video.snippet.title;
 
                                 const thumbDiv = document.createElement('div');
@@ -332,9 +337,13 @@
         function showMoreThumbnails(selectedTitle) {
             const apiKey = localStorage.getItem("YT_API_KEY");
             const grid = document.getElementById('thumbnail-grid');
-            grid.innerHTML = ''; // দ্রুত শো করার জন্য গ্রিড খালি
+            grid.innerHTML = '';
 
-            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(selectedTitle)}&maxResults=50&type=video&key=${apiKey}`;
+            let offset = previousSearches.get(selectedTitle) || 0;
+            offset += 50;
+            previousSearches.set(selectedTitle, offset);
+
+            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(selectedTitle)}&maxResults=50&type=video&key=${apiKey}&startIndex=${offset}`;
 
             fetch(url)
                 .then(response => response.json())
@@ -349,10 +358,10 @@
                                 const duration = video.contentDetails.duration;
                                 const time = parseDuration(duration);
                                 return time > 240;
-                            }).slice(0, 10); // ১০টি লং ভিডিও
+                            }).slice(0, 10);
 
                             moreLongVideos.forEach((video, index) => {
-                                const thumbnailUrl = video.snippet.thumbnails.high.url; // এইচডি কোয়ালিটি
+                                const thumbnailUrl = video.snippet.thumbnails.maxres ? video.snippet.thumbnails.maxres.url : video.snippet.thumbnails.high.url; // 1080p বা তার কাছাকাছি
                                 const title = video.snippet.title;
 
                                 const thumbDiv = document.createElement('div');
@@ -376,7 +385,7 @@
             grid.innerHTML = '';
 
             initialLongVideos.forEach((video, index) => {
-                const thumbnailUrl = video.snippet.thumbnails.high.url; // এইচডি কোয়ালিটি
+                const thumbnailUrl = video.snippet.thumbnails.maxres ? video.snippet.thumbnails.maxres.url : video.snippet.thumbnails.high.url; // 1080p বা তার কাছাকাছি
                 const title = video.snippet.title;
 
                 const thumbDiv = document.createElement('div');
@@ -398,7 +407,7 @@
                     const a = document.createElement('a');
                     const url = window.URL.createObjectURL(blob);
                     a.href = url;
-                    a.download = 'thumbnail_hd.jpg'; // এইচডি নামে ডাউনলোড
+                    a.download = 'thumbnail_1080p.jpg'; // 1080p নামে ডাউনলোড
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
