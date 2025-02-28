@@ -30,10 +30,52 @@
         body.night-mode .search-btn { background: #cc0000; }
         body.night-mode .search-btn:hover { background: #aa0000; }
         .main-content { flex: 1; margin: 20px 10px 60px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: calc(100vh - 120px); }
-        .thumbnail-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 1200px; }
-        .thumbnail { width: 200px; height: 150px; background: #fff; border-radius: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); cursor: pointer; transition: transform 0.3s; }
-        .thumbnail:hover { transform: scale(1.05); }
-        body.night-mode .thumbnail { background: #444; }
+        .thumbnail-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            justify-content: center;
+            max-width: 1200px;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: calc(100vh - 200px);
+        }
+        .thumbnail {
+            width: 100%;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: transform 0.3s;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+        }
+        .thumbnail img {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+            object-fit: cover;
+        }
+        .thumbnail:hover {
+            transform: scale(1.05);
+        }
+        .thumbnail-title {
+            font-size: 0.9em;
+            color: #333;
+            text-align: center;
+            margin-top: 10px;
+            word-wrap: break-word;
+            padding: 0 5px;
+        }
+        body.night-mode .thumbnail {
+            background: #444;
+        }
+        body.night-mode .thumbnail-title {
+            color: #f0f0f0;
+        }
         .back-btn { padding: 10px 20px; margin-top: 20px; font-size: 1em; background: #ff0000; color: white; border: none; border-radius: 5px; box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); cursor: pointer; transition: background 0.3s; }
         .back-btn:hover { background: #cc0000; }
         body.night-mode .back-btn { background: #cc0000; }
@@ -60,7 +102,11 @@
             .search-bar { width: 90%; font-size: 1em; }
             .search-btn { padding: 10px 20px; font-size: 1em; }
             .main-content { margin: 10px 5px 50px; }
+            .thumbnail-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
             .thumbnail { width: 150px; height: 100px; }
+            .thumbnail-title { font-size: 0.8em; }
             .footer { height: 40px; padding: 5px; }
             .home-icon { font-size: 1em; }
             .footer-link, .email-link { font-size: 0.7em; }
@@ -214,87 +260,149 @@
 
         let initialThumbnails = [];
         let selectedThumbnail = null;
+        let initialLongVideos = []; // নতুন যোগ: আগের ৩০টি থাম্বনেল সংরক্ষণের জন্য
 
         function searchThumbnails() {
-    const apiKey = localStorage.getItem("YT_API_KEY");
-    const query = document.querySelector('.search-bar').value.trim();
+            const apiKey = localStorage.getItem("YT_API_KEY");
+            const query = document.querySelector('.search-bar').value.trim();
 
-    if (!query) {
-        alert('Please enter a video title!');
-        return;
-    }
+            if (!query) {
+                alert('Please enter a video title!');
+                return;
+            }
 
-    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&maxResults=20&type=video&key=${apiKey}`;
+            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&maxResults=50&type=video&key=${apiKey}`;
 
-    fetch(url)
-        .then(response => response.json())
-        .then(data => {
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    const grid = document.getElementById('thumbnail-grid');
+                    grid.innerHTML = '';
+
+                    const videoIds = data.items.map(item => item.id.videoId).join(',');
+                    const videoDetailsUrl = `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,snippet&id=${videoIds}&key=${apiKey}`;
+
+                    fetch(videoDetailsUrl)
+                        .then(response => response.json())
+                        .then(videoData => {
+                            initialLongVideos = videoData.items.filter(video => {
+                                const duration = video.contentDetails.duration;
+                                const time = parseDuration(duration);
+                                return time > 240;
+                            }).slice(0, 30); // ৩০টি লং ভিডিও সংরক্ষণ
+
+                            initialLongVideos.forEach((video, index) => {
+                                const thumbnailUrl = video.snippet.thumbnails.medium.url;
+                                const title = video.snippet.title;
+
+                                const thumbDiv = document.createElement('div');
+                                thumbDiv.className = 'thumbnail';
+                                thumbDiv.innerHTML = `
+                                    <img src="${thumbnailUrl}" alt="Thumbnail ${index + 1}" onclick="showMoreThumbnails('${title}')">
+                                    <div class="thumbnail-title">${title}</div>
+                                `;
+                                grid.appendChild(thumbDiv);
+                            });
+
+                            document.getElementById('back-btn').style.display = 'none';
+                        })
+                        .catch(error => console.error('Error fetching video details:', error));
+                })
+                .catch(error => console.error('Error fetching search data:', error));
+        }
+
+        function parseDuration(duration) {
+            const matches = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+            const hours = parseInt(matches[1]) || 0;
+            const minutes = parseInt(matches[2]) || 0;
+            const seconds = parseInt(matches[3]) || 0;
+            return (hours * 3600) + (minutes * 60) + seconds;
+        }
+
+        function showMoreThumbnails(selectedTitle) {
+            const apiKey = localStorage.getItem("YT_API_KEY");
+            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(selectedTitle)}&maxResults=50&type=video&key=${apiKey}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    const grid = document.getElementById('thumbnail-grid');
+                    grid.innerHTML = '';
+
+                    const videoIds = data.items.map(item => item.id.videoId).join(',');
+                    const videoDetailsUrl = `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,snippet&id=${videoIds}&key=${apiKey}`;
+
+                    fetch(videoDetailsUrl)
+                        .then(response => response.json())
+                        .then(videoData => {
+                            const moreLongVideos = videoData.items.filter(video => {
+                                const duration = video.contentDetails.duration;
+                                const time = parseDuration(duration);
+                                return time > 240;
+                            }).slice(0, 10); // ১০টি লং ভিডিও
+
+                            moreLongVideos.forEach((video, index) => {
+                                const thumbnailUrl = video.snippet.thumbnails.medium.url;
+                                const title = video.snippet.title;
+
+                                const thumbDiv = document.createElement('div');
+                                thumbDiv.className = 'thumbnail';
+                                thumbDiv.innerHTML = `
+                                    <img src="${thumbnailUrl}" alt="Thumbnail ${index + 1}" onclick="downloadThumbnail('${thumbnailUrl}')">
+                                    <div class="thumbnail-title">${title}</div>
+                                `;
+                                grid.appendChild(thumbDiv);
+                            });
+
+                            document.getElementById('back-btn').style.display = 'block'; // ব্যাক বাটন শো
+                        })
+                        .catch(error => console.error('Error fetching more thumbnails:', error));
+                })
+                .catch(error => console.error('Error fetching search data:', error));
+        }
+
+        function goBack() {
             const grid = document.getElementById('thumbnail-grid');
             grid.innerHTML = '';
 
-            // প্রথম ২০টি থাম্বনেল দেখাবে
-            data.items.slice(0, 20).forEach((item, index) => {
-                const videoId = item.id.videoId;
-                const thumbnailUrl = item.snippet.thumbnails.medium.url;
+            initialLongVideos.forEach((video, index) => {
+                const thumbnailUrl = video.snippet.thumbnails.medium.url;
+                const title = video.snippet.title;
 
                 const thumbDiv = document.createElement('div');
                 thumbDiv.className = 'thumbnail';
-                thumbDiv.innerHTML = `<img src="${thumbnailUrl}" alt="Thumbnail ${index + 1}" onclick="showMoreThumbnails(${index}, '${videoId}')">`;
+                thumbDiv.innerHTML = `
+                    <img src="${thumbnailUrl}" alt="Thumbnail ${index + 1}" onclick="showMoreThumbnails('${title}')">
+                    <div class="thumbnail-title">${title}</div>
+                `;
                 grid.appendChild(thumbDiv);
             });
 
-            // ব্যাক বাটন হাইড করা
             document.getElementById('back-btn').style.display = 'none';
-        })
-        .catch(error => console.error('Error fetching data:', error));
-}
-function downloadThumbnail(url) {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'thumbnail.jpg';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-}
-
-        function showMoreThumbnails() {
-    const grid = document.getElementById('thumbnail-grid');
-    grid.innerHTML = '';
-
-    for (let i = 20; i < 30; i++) { // আগের ২০টি লুকিয়ে নতুন ১০টি দেখাবে
-        if (initialThumbnails[i]) {
-            grid.appendChild(initialThumbnails[i]);
         }
-    }
 
-    document.getElementById('back-btn').style.display = 'block'; // ব্যাক বাটন দেখাবে
-}
-
-        function goBack() {
-    const grid = document.getElementById('thumbnail-grid');
-    grid.innerHTML = '';
-
-    for (let i = 0; i < 20; i++) { // প্রথম ২০টি থাম্বনেল আবার দেখাবে
-        if (initialThumbnails[i]) {
-            grid.appendChild(initialThumbnails[i]);
+        function downloadThumbnail(url) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'thumbnail.jpg';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
-    }
 
-    document.getElementById('back-btn').style.display = 'none'; // ব্যাক বাটন লুকাবে
-}
-if (!localStorage.getItem("YT_API_KEY")) { // এখানে ! (NOT) যোগ করা হলো
-    const userKey = prompt("Enter your YouTube API Key:");
-    if (userKey) {
-        localStorage.setItem("YT_API_KEY", userKey);
-        alert("API Key Saved!");
-    } else {
-        alert("API Key is required!");
-    }
-}
+        if (!localStorage.getItem("YT_API_KEY")) {
+            const userKey = prompt("Enter your YouTube API Key:");
+            if (userKey) {
+                localStorage.setItem("YT_API_KEY", userKey);
+                alert("API Key Saved!");
+            } else {
+                alert("API Key is required!");
+            }
+        }
 
-// Local Storage থেকে API Key পড়ুন
-const apiKey = localStorage.getItem("YT_API_KEY");
-console.log("API Key Loaded:", apiKey);
+        const apiKey = localStorage.getItem("YT_API_KEY");
+        console.log("API Key Loaded:", apiKey);
     </script>
 </body>
 </html>
+                      
